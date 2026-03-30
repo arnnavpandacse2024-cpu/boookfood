@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bhaiya Restaurant – Food & Hall Booking</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Raleway:wght@300;400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- SPLASH / HERO -->
+<header id="hero">
+  <div class="hero-bg"></div>
+  <nav id="navbar">
+    <div class="logo"><span class="logo-icon">🍽️</span> <span>Bhaiya <em>Restaurant</em></span></div>
+    <div class="nav-links">
+      <a href="#" onclick="showSection('home')">Home</a>
+      <a href="#" onclick="showSection('food-user')">Food Booking</a>
+      <a href="#" onclick="showSection('hall-user')">Hall Booking</a>
+      <a href="#" onclick="showSection('admin-login')" class="btn-admin">Admin Panel</a>
+    </div>
+    <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+  </nav>
+  <div class="hero-content" id="home">
+    <p class="tagline">Est. 2005 · Authentic Flavours</p>
+    <h1>Bhaiya<br/><span class="gold">Restaurant</span></h1>
+    <p class="subtitle">Book your favourite food or reserve a cabin for your special celebration</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showSection('food-user')"><i class="fas fa-utensils"></i> Order Food</button>
+      <button class="btn-outline" onclick="showSection('hall-user')"><i class="fas fa-birthday-cake"></i> Book Hall</button>
+    </div>
+    <div class="hero-badges">
+      <div class="badge"><i class="fas fa-motorcycle"></i><span>Home Delivery<br/><small>Up to 10 KM</small></span></div>
+      <div class="badge"><i class="fas fa-glass-cheers"></i><span>3 Private<br/><small>Cabins Available</small></span></div>
+      <div class="badge"><i class="fas fa-clock"></i><span>Open Daily<br/><small>10AM – 11PM</small></span></div>
+    </div>
+  </div>
+  <div class="scroll-indicator"><i class="fas fa-chevron-down"></i></div>
+</header>
+
+<!-- ===================== USER: FOOD BOOKING ===================== -->
+<section id="food-user" class="page-section hidden">
+  <div class="section-header">
+    <h2>🍛 Food Booking</h2>
+    <p>Fill your details, choose items, get your bill</p>
+  </div>
+  <div class="container two-col">
+    <!-- LEFT: USER FORM -->
+    <div class="card form-card">
+      <h3><i class="fas fa-user-circle"></i> Your Details</h3>
+      <div id="food-booking-closed" class="alert-box warning hidden">
+        <i class="fas fa-exclamation-triangle"></i> Food booking is currently <strong>CLOSED</strong> by admin.
+      </div>
+      <div id="food-form-wrap">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="fu-name" placeholder="Enter your name"/>
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" id="fu-phone" placeholder="+91 XXXXXXXXXX"/>
+        </div>
+        <div class="form-group">
+          <label>Delivery Address *</label>
+          <textarea id="fu-address" rows="2" placeholder="Your full address"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Distance from Restaurant (KM) * <small style="color:#e63946">(Max 10 KM)</small></label>
+          <input type="number" id="fu-distance" min="0" max="10" step="0.1" placeholder="e.g. 3.5" oninput="checkDistance()"/>
+          <div id="distance-error" class="field-error hidden">❌ Delivery not available beyond 10 KM</div>
+        </div>
+        <div class="form-group">
+          <label>Google Map Link <small>(Optional)</small></label>
+          <input type="url" id="fu-map" placeholder="https://maps.google.com/..."/>
+        </div>
+        <p class="notice"><i class="fas fa-info-circle"></i> <strong>Note:</strong> Once booking is confirmed, it <strong>CANNOT be cancelled</strong>. 100% bill payment is mandatory.</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: MENU CART -->
+    <div class="card menu-card">
+      <h3><i class="fas fa-list"></i> Select Items</h3>
+      <div class="search-bar">
+        <input type="text" id="menu-search" placeholder="Search menu..." oninput="filterMenu()"/>
+        <i class="fas fa-search"></i>
+      </div>
+      <div class="category-tabs" id="cat-tabs"></div>
+      <div id="menu-list" class="menu-grid"></div>
+    </div>
+  </div>
+
+  <!-- CART SUMMARY -->
+  <div class="container">
+    <div class="card cart-summary" id="cart-summary">
+      <h3><i class="fas fa-shopping-cart"></i> Your Cart <span id="cart-count" class="badge-count">0</span></h3>
+      <div id="cart-items-list"></div>
+      <div class="bill-totals" id="bill-totals" style="display:none">
+        <div class="bill-row"><span>Subtotal</span><span id="b-subtotal">₹0</span></div>
+        <div class="bill-row"><span>Delivery (<span id="b-km">0</span> KM × ₹<span id="b-rate">20</span>)</span><span id="b-delivery">₹0</span></div>
+        <div class="bill-row discount"><span>Discount</span><span id="b-discount">-₹0</span></div>
+        <div class="bill-row total"><span>TOTAL</span><span id="b-total">₹0</span></div>
+        <div class="payment-info" id="payment-info"></div>
+      </div>
+      <button class="btn-primary full-width" onclick="confirmFoodBooking()"><i class="fas fa-check-circle"></i> Confirm & Generate Bill</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== USER: HALL BOOKING ===================== -->
+<section id="hall-user" class="page-section hidden">
+  <div class="section-header">
+    <h2>🎉 Hall / Cabin Booking</h2>
+    <p>Reserve a private cabin for your celebration</p>
+  </div>
+  <div class="container two-col">
+    <div class="card form-card">
+      <h3><i class="fas fa-calendar-alt"></i> Book Your Cabin</h3>
+      <div id="hall-booking-closed" class="alert-box warning hidden">
+        <i class="fas fa-exclamation-triangle"></i> Hall booking is currently <strong>CLOSED</strong> by admin.
+      </div>
+      <div id="hall-form-wrap">
+        <div class="alert-box info">
+          <i class="fas fa-info-circle"></i> Book your cabin <strong>before 24 hours</strong> of the event. Extra time charges are applied by admin manually.
+        </div>
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="hu-name" placeholder="Your name"/>
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" id="hu-phone" placeholder="+91 XXXXXXXXXX"/>
+        </div>
+        <div class="form-group">
+          <label>Function Type *</label>
+          <select id="hu-function">
+            <option value="">-- Select Function --</option>
+            <option>Birthday Party</option>
+            <option>Anniversary</option>
+            <option>Wedding Reception</option>
+            <option>Corporate Event</option>
+            <option>Baby Shower</option>
+            <option>Other Function</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Event Date *</label>
+          <input type="date" id="hu-date" oninput="checkCabinAvailability()"/>
+        </div>
+        <div class="form-group">
+          <label>Start Time *</label>
+          <input type="time" id="hu-time"/>
+        </div>
+        <div class="form-group">
+          <label>Duration (Hours) *</label>
+          <input type="number" id="hu-hours" min="1" max="12" placeholder="e.g. 3"/>
+        </div>
+        <div class="form-group">
+          <label>Total Members *</label>
+          <input type="number" id="hu-members" min="1" placeholder="Number of guests"/>
+        </div>
+        <div id="cabin-status-msg"></div>
+        <p class="notice"><i class="fas fa-info-circle"></i> Only <strong>3 Cabins</strong> available per day. Booking once done is non-refundable.</p>
+      </div>
+    </div>
+    <div class="card cabin-info-card">
+      <h3><i class="fas fa-door-open"></i> Cabin Availability</h3>
+      <div id="cabin-availability-display">
+        <div class="cabin-slot" id="cabin-slot-1"><span class="cabin-num">Cabin 1</span><span class="cabin-badge available">Available</span></div>
+        <div class="cabin-slot" id="cabin-slot-2"><span class="cabin-num">Cabin 2</span><span class="cabin-badge available">Available</span></div>
+        <div class="cabin-slot" id="cabin-slot-3"><span class="cabin-num">Cabin 3</span><span class="cabin-badge available">Available</span></div>
+      </div>
+      <div class="pricing-modes" id="hall-pricing-preview">
+        <h4>💰 Pricing</h4>
+        <div id="hall-price-display"></div>
+      </div>
+      <button class="btn-primary full-width" style="margin-top:1.5rem" onclick="confirmHallBooking()"><i class="fas fa-check-circle"></i> Confirm Cabin Booking</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ADMIN LOGIN ===================== -->
+<section id="admin-login" class="page-section hidden">
+  <div class="container center-col">
+    <div class="card login-card">
+      <div class="lock-icon"><i class="fas fa-lock"></i></div>
+      <h3>Admin Panel Login</h3>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="admin-user" placeholder="admin"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="admin-pass" placeholder="••••••••"/>
+      </div>
+      <div id="login-error" class="field-error hidden">Invalid credentials</div>
+      <button class="btn-primary full-width" onclick="adminLogin()"><i class="fas fa-sign-in-alt"></i> Login</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ADMIN PANEL ===================== -->
+<section id="admin-panel" class="page-section hidden">
+  <div class="section-header">
+    <h2>⚙️ Admin Panel</h2>
+    <p>Manage bookings, menu, pricing and settings</p>
+    <button class="btn-outline small" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+
+  <div class="container">
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="switchAdminTab('food-mgmt')"><i class="fas fa-utensils"></i> Food Mgmt</button>
+      <button class="tab-btn" onclick="switchAdminTab('hall-mgmt')"><i class="fas fa-glass-cheers"></i> Hall Mgmt</button>
+      <button class="tab-btn" onclick="switchAdminTab('delivery-mgmt')"><i class="fas fa-motorcycle"></i> Delivery</button>
+      <button class="tab-btn" onclick="switchAdminTab('payment-mgmt')"><i class="fas fa-credit-card"></i> Payment</button>
+      <button class="tab-btn" onclick="switchAdminTab('bookings-view')"><i class="fas fa-list-alt"></i> Bookings</button>
+    </div>
+
+    <!-- FOOD MANAGEMENT -->
+    <div class="admin-tab-content active" id="food-mgmt">
+      <div class="two-col">
+        <div class="card">
+          <h3><i class="fas fa-toggle-on"></i> Food Booking Status</h3>
+          <div class="toggle-row">
+            <span>Booking Open/Close</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="food-status-toggle" checked onchange="toggleFoodStatus()"/>
+              <span class="slider"></span>
+            </label>
+            <span id="food-status-text" class="status-text open">OPEN</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-plus-circle"></i> Add Menu Item <small>(Max 200)</small></h3>
+          <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="new-item-name" placeholder="e.g. Paneer Butter Masala"/>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <input type="text" id="new-item-cat" placeholder="e.g. Veg Main Course"/>
+          </div>
+          <div class="form-group">
+            <label>Price (₹)</label>
+            <input type="number" id="new-item-price" placeholder="e.g. 180"/>
+          </div>
+          <div class="form-group">
+            <label>Emoji / Icon</label>
+            <input type="text" id="new-item-emoji" placeholder="🍛"/>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="new-item-available" checked/>
+            <label for="new-item-available">Available</label>
+          </div>
+          <button class="btn-primary" onclick="addMenuItem()"><i class="fas fa-plus"></i> Add Item</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:1rem">
+        <h3><i class="fas fa-list"></i> Menu Items <span id="menu-item-count" class="badge-count">0</span></h3>
+        <div class="search-bar">
+          <input type="text" id="admin-menu-search" placeholder="Search items..." oninput="filterAdminMenu()"/>
+          <i class="fas fa-search"></i>
+        </div>
+        <div id="admin-menu-list" class="admin-menu-table"></div>
+      </div>
+    </div>
+
+    <!-- HALL MANAGEMENT -->
+    <div class="admin-tab-content hidden" id="hall-mgmt">
+      <div class="two-col">
+        <div class="card">
+          <h3><i class="fas fa-toggle-on"></i> Hall Booking Status</h3>
+          <div class="toggle-row">
+            <span>Booking Open/Close</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="hall-status-toggle" checked onchange="toggleHallStatus()"/>
+              <span class="slider"></span>
+            </label>
+            <span id="hall-status-text" class="status-text open">OPEN</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-rupee-sign"></i> Pricing Mode</h3>
+          <div class="form-group">
+            <label>Charge By</label>
+            <select id="hall-pricing-mode" onchange="updateHallPricing()">
+              <option value="hour">Per Hour</option>
+              <option value="person">Per Person</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="hall-price-amount" value="500" placeholder="Enter amount" oninput="updateHallPricing()"/>
+          </div>
+          <p class="notice"><i class="fas fa-info-circle"></i> Extra time charges are applied manually per booking.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:1rem">
+        <h3><i class="fas fa-door-open"></i> Cabin Status Management</h3>
+        <div id="admin-cabin-list" class="cabin-admin-grid"></div>
+      </div>
+    </div>
+
+    <!-- DELIVERY MANAGEMENT -->
+    <div class="admin-tab-content hidden" id="delivery-mgmt">
+      <div class="card max-500">
+        <h3><i class="fas fa-motorcycle"></i> Delivery Price Setup</h3>
+        <p class="notice">Maximum delivery range: <strong>10 KM</strong></p>
+        <div id="km-price-table"></div>
+        <button class="btn-primary" style="margin-top:1rem" onclick="addKmRow()"><i class="fas fa-plus"></i> Add KM Range</button>
+      </div>
+    </div>
+
+    <!-- PAYMENT MANAGEMENT -->
+    <div class="admin-tab-content hidden" id="payment-mgmt">
+      <div class="card max-500">
+        <h3><i class="fas fa-credit-card"></i> Payment Details</h3>
+        <p class="notice">These details will appear on every bill.</p>
+        <div class="form-group">
+          <label>UPI ID</label>
+          <input type="text" id="pay-upi" placeholder="yourname@upi"/>
+        </div>
+        <div class="form-group">
+          <label>UPI QR Name</label>
+          <input type="text" id="pay-name" placeholder="Bhaiya Restaurant"/>
+        </div>
+        <div class="form-group">
+          <label>Restaurant Address</label>
+          <textarea id="pay-address" rows="2" placeholder="Street, City, State, ZIP"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Other Payment Info</label>
+          <textarea id="pay-other" rows="3" placeholder="Account No / IFSC / Cash etc."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Admin Contact Number (shown on bill for unavailable items)</label>
+          <input type="tel" id="admin-contact" placeholder="+91 9XXXXXXXXX"/>
+        </div>
+        <button class="btn-primary" onclick="savePaymentInfo()"><i class="fas fa-save"></i> Save Payment Info</button>
+        <div id="pay-save-msg" class="field-success hidden">✅ Saved successfully!</div>
+      </div>
+    </div>
+
+    <!-- BOOKINGS VIEW -->
+    <div class="admin-tab-content hidden" id="bookings-view">
+      <div class="two-col">
+        <div class="card">
+          <h3><i class="fas fa-utensils"></i> Food Bookings</h3>
+          <div id="food-bookings-list" class="bookings-list"></div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-glass-cheers"></i> Hall Bookings</h3>
+          <div id="hall-bookings-list" class="bookings-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- BILL MODAL -->
+<div id="bill-modal" class="modal-overlay hidden">
+  <div class="modal-box" id="bill-modal-content">
+    <button class="modal-close" onclick="closeBillModal()"><i class="fas fa-times"></i></button>
+    <div id="bill-printable"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="printBill()"><i class="fas fa-print"></i> Print</button>
+      <button class="btn-outline" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast hidden"></div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">🍽️ Bhaiya Restaurant</div>
+    <p>Authentic flavours, delivered to your doorstep or celebrated in our halls.</p>
+    <p id="footer-address" style="font-size:0.8rem;color:var(--gold-light);margin-bottom:1rem"></p>
+    <p class="footer-note">© 2025 Bhaiya Restaurant. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
